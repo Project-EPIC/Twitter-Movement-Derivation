@@ -1,0 +1,27 @@
+#These attributes combine to define a Historical Job.
+#Current Dates: 
+#October 25 00:00 EST
+#November 7 00:00 EST
+  
+job:
+  #These will change from request to request.
+  title: 2012 Hurricane Sandy - GeoTagged BoundingBoxes
+  from_date: 201210250400
+  to_date:   201211070500
+  #These are 'static' values (more or less).
+  service_name: gnip
+  #These are optional, since they are defaults in code.
+  publisher: twitter
+  stream_type: track
+  data_format: activity-streams
+
+#File with YAML-formatted rules (Or JSON).
+rules_file: /Users/jenningsanderson/Documents/Twitter-Movement-Derivation/Data_Acquisition/GNIP_Query/rules/sandy_gnip_geo_rules.json 
+
+#Possible states:
+# - new
+# - estimating
+# - quoted
+# - accepted/rejected
+# - running
+# - finished

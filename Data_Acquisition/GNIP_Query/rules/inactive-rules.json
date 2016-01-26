@@ -1,0 +1,13 @@
+{"rules": 
+	[
+		{
+			"value" : "bounding_box:[-74.2557 40.4961 -73.7251 40.9006]",
+			"tag"   : "staten_island"
+		},
+
+		{
+			"value" : "bounding_box:[-74.0131 40.5411 -73.7375 40.6605]",
+			"tag"   : "rockaways"
+		}
+	]
+}
