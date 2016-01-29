@@ -1,8 +1,8 @@
 {"rules": 
 	[
     	{
-    		"value" : "bounding_box:[-74.0194 40.6997 -73.9393 40.7874]",
-    		"tag"   : "manhattan"
+			"value" : "bounding_box:[-74.2557 40.4961 -74.0522 40.649]",
+			"tag"   : "staten_island"
 		}
   	]
 }

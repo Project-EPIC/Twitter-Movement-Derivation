@@ -5,7 +5,7 @@
   
 job:
   #These will change from request to request.
-  title: 2012 Hurricane Sandy - GeoTagged BoundingBoxes
+  title: 2012 Hurricane Sandy - StatenIsland
   from_date: 201210250400
   to_date:   201211070500
   #These are 'static' values (more or less).
