@@ -2,16 +2,21 @@
 layout: default
 ---
 
-What is this site?
+Can someone's geolocated Twitter activity become a proxy for their location?
+
+
+
+
+
+<h2>Available Pages</h2>
+
 
 <ul class="post-list">
-  {% for post in site.posts %}
-    <li>
-      <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
 
-      <h2>
-        <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
-      </h2>
+  {% for post in site.posts %}
+    <li class="post-item">
+      <h2 class='post-title'> <a href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a> </h2>
     </li>
   {% endfor %}
+
 </ul>
