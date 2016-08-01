@@ -1,0 +1,6 @@
+*.geojsonl
+*.geojson
+*.json
+*.jsonl
+*data/*
+*.mbtiles

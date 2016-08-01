@@ -1,10 +1,7 @@
-# Twitter-Movement-Derivation
+Vulnerable Locations ScratchPad
+===============================
 
-Determining Movement and Location of Users through Twitter
+Total Tweets (from all Jobs): 3,658,714
+This number should be the sum of all the individual jobs, will have to confirm with the Dropbox file
 
-_Note: This is a continuation of this project: [Twitter-Evacuation-Patterns](http://jenningsanderson.github.io/Twitter-Evacuation-Patterns)_
-
-#Please refer to the [Wiki](https://github.com/Project-EPIC/Twitter-Movement-Derivation/wiki) for information on this project.
-
-Data process:
-
+Total Tweets with Geo Tag: 3,632,625... wtf?
