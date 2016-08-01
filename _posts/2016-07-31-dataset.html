@@ -1,9 +1,14 @@
 ---
 layout: interactive_map
 title:  "Current Dataset"
-date:   2016-06-16 13:08:14 -0400
-categories: osm editing history
+date:   2016-07-31 20:08:14 -0400
 permalink: /dataset
+
+description: >
+  Each of these boxes represents the geographic boundary for the GNIP queries.<br><br>
+  Clicking on a box shows the number of tweets that were collected in that box.<br><br>
+  Zoom in (by scrolling) to see individual tweets. Hover your mouse over a tweet to
+  read the contents.
 ---
 
 <script src="{{site.baseurl}}/assets/js/filters.js"></script>
@@ -14,8 +19,7 @@ permalink: /dataset
 <script type="text/javascript">
 
   //These will get compressed to be just 1 source :)
-  var allTweetsVectorSource = new VectorTileSource({MapboxVectorTileSetID: 'jenningsanderson.4ne7fgr6'})
-
+  var allTweetsVectorSource = new VectorTileSource({MapboxVectorTileSetID: 'jenningsanderson.dqldcrt1'})
 
 
   // Access Mapbox and get the base map!
@@ -23,13 +27,15 @@ permalink: /dataset
     var map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/dark-v8',
-        center: [-73.8215,40.7748],
-        zoom: 5,
-        hash: true
+        center: [-73.184,39.775],
+        zoom: 7,
+        hash: true,
+        minZoom:2
     });
 
 
   //On map load, add all the sources and process the tilesets above
+  tweetlayers = []
 
   map.on('load',function(){
     //Iterate over all the available tileSets listed above, adding them as yearLayer objects:
@@ -44,10 +50,18 @@ permalink: /dataset
       'source-layer': 'before_postgeojsonl',
       'paint' : {
         'circle-color':"#00FF00",
-        'circle-radius':2,
+        'circle-radius':{
+          'stops':[
+            [0,1],
+            [4,2],
+            [10,8],
+            [20,15]
+          ]},
         'circle-opacity':1
       }
     });
+
+    tweetlayers.push('before-storm')
 
     map.addLayer({
       'id': 'during-storm',
@@ -57,23 +71,39 @@ permalink: /dataset
       'source-layer': 'during_postgeojsonl',
       'paint' : {
         'circle-color':"#FF0000",
-        'circle-radius':2,
+        'circle-radius':{
+          'stops':[
+            [0,1],
+            [4,2],
+            [10,8],
+            [20,15]
+          ]},
         'circle-opacity':1
       }
     });
+
+    tweetlayers.push('during-storm')
 
     map.addLayer({
       'id': 'after-storm',
       'minzoom':2,
       'type': 'circle',
       'source': allTweetsVectorSource.sourceID,
-      'source-layer': 'after_postgeojson',
+      'source-layer': 'after_postgeojsonl',
       'paint' : {
         'circle-color':"#00FFFF",
-        'circle-radius':2,
+        'circle-radius':{
+          'stops':[
+            [0,1],
+            [4,2],
+            [10,8],
+            [20,15]
+          ]},
         'circle-opacity':1
       }
     });
+
+    tweetlayers.push('after-storm')
 
     map.addLayer({
       'id': 'before-storm-share',
@@ -83,37 +113,74 @@ permalink: /dataset
       'source-layer': 'before_sharegeojsonl',
       'paint' : {
         'circle-color':"#FF00FF",
-        'circle-radius':2,
+        'circle-radius':{
+          'stops':[
+            [0,1],
+            [4,2],
+            [10,8],
+            [20,15]
+          ]},
         'circle-opacity':1
       }
     });
 
+    tweetlayers.push('before-storm-share')
 
-    //individual twitterer
-      var src = new mapboxgl.GeoJSONSource({
-        data: "{{site.baseurl}}/assets/geojson/1MissMercedes.geojson"
-      })
-
-      map.addSource('tweet-src',src)
-
-      map.addLayer({
-      "id": "tweet-layer",
-      "type": "circle",
-      "source": "tweet-src",
-      "minzoom":3,
-      "maxzoom":22,
-      "paint":{
-        "circle-radius": 5,
-        "circle-color": {
-          'property': 'cluster',
+    //GNIP Boxes
+    var boxes_src = new mapboxgl.GeoJSONSource({
+      data: "{{site.baseurl}}/assets/geojson/gnip_bboxes_with_counts.geojson"
+    })
+    map.addSource('gnip-boxes-src',boxes_src)
+    map.addLayer({
+      'id': 'gnip-boxes',
+      'minzoom':2,
+      'maxzoom':11,
+      'type': 'fill',
+      'source': 'gnip-boxes-src',
+      'paint' : {
+        'fill-color':{
+          'property':'tweets',
           'stops':[
-            [1,'red'],
-            [20,'blue']
+            [0, 'white'],
+            [50, 'yellow'],
+            [10000, 'red'],
+            [100000, 'darkred']
           ]
         },
-        "circle-opacity": 0.8
+        'fill-opacity':0.5,
+        'fill-outline-color':'blue'
       }
-    })
+    });
+
+
+
+
+
+    //individual twitterer
+    //   var src = new mapboxgl.GeoJSONSource({
+    //     data: "{{site.baseurl}}/assets/geojson/1MissMercedes.geojson"
+    //   })
+    //
+    //   map.addSource('tweet-src',src)
+    //
+    //   map.addLayer({
+    //   "id": "tweet-layer",
+    //   "type": "circle",
+    //   "source": "tweet-src",
+    //   "minzoom":3,
+    //   "maxzoom":22,
+    //   "paint":{
+    //     "circle-radius": 5,
+    //     "circle-color": {
+    //       'property': 'cluster',
+    //       'stops':[
+    //         [1,'red'],
+    //         [20,'blue']
+    //       ]
+    //     },
+    //     "circle-opacity": 0.8
+    //   }
+    // })
   });
 
   // Once the map is loaded, then update Page state and render!
@@ -123,29 +190,45 @@ permalink: /dataset
   })
 
   // Create a popup, but don't add it to the map yet.
-  map.on('mousemove', function (e) {
-    var features = map.queryRenderedFeatures(e.point, {'layers': ['tweet-layer','all-geotagged-tweets']});
-    map.getCanvas().style.cursor = ((features.length) && map.getZoom()>5)? 'pointer' : '';
-  });
 
-  map.on('click', function(e) {
-    if (map.getZoom() > 5){
-      var features = map.queryRenderedFeatures(e.point, { 'layers': ['tweet-layer','all-geotagged-tweets'] });
-      if (!features.length) {
-          return;
-      }
-      map.getCanvas().style.cursor = 'pointer';
+  var popup = new mapboxgl.Popup({
+      closeButton: true,
+      closeOnClick: true
+  })
+
+  map.on('mousemove', function(e) {
+    if (map.getZoom() > 11){
+      var features = map.queryRenderedFeatures(e.point, {layers: tweetlayers});
+      if (!features.length) { popup.remove(); return; }
       var feature = features[0];
-      // Populate the popup and set its coordinates
-      // based on the feature found.
-      var popup = new mapboxgl.Popup({
-          closeButton: true,
-          closeOnClick: true
-      }).setLngLat(map.unproject(e.point))
+      map.getCanvas().style.cursor = 'pointer';
+      popup.setLngLat(map.unproject(e.point))
         .setHTML(formattedTweet(feature.properties))
         .addTo(map);
-      }
+    }else{
+      var features = map.queryRenderedFeatures(e.point, {layers: ['gnip-boxes']});
+      map.getCanvas().style.cursor = ((features.length) && map.getZoom()>5)? 'pointer' : '';
+    }
   });
+
+  map.on("mouseout", function() {
+    popup.remove()
+  });
+
+  map.on('click',function(e){
+    if (map.getZoom() > 5) {
+      popup = new mapboxgl.Popup({
+          closeButton: true,
+          closeOnClick: true
+      })
+      var features = map.queryRenderedFeatures(e.point, {layers: ['gnip-boxes']});
+      if (!features.length) { popup.remove(); return; }
+      var feature = features[0];
+      popup.setLngLat(map.unproject(e.point))
+        .setHTML(`<h3>${feature.properties.tweets} Tweets</h3>`)
+        .addTo(map);
+    }
+  })
 
   // function updateFilters(){
   //   tilesController.updateFilters()
@@ -160,7 +243,6 @@ permalink: /dataset
     return `<table class="formatted-tweet">
       <tr><td class="tweet-field">User</td><td>${properties.user}</td></tr>
       <tr><td class="tweet-field">Time</td><td>${properties.time}</td></tr>
-      <tr><td class="tweet-field">Text</td><td>${properties.text}</td></tr>
-      <tr><td class="tweet-field">Type</td><td>${properties.verb}</td></tr></table>`
+      <tr><td class="tweet-field">Text</td><td>${properties.text}</td></tr></table>`
   }
 </script>
