@@ -1,14 +1,28 @@
 ---
-layout: default
+#Should still get parsed!
 ---
-<article class="post">
-
-  <header class="post-header">
-    <h1 class="post-title">{{ page.title }}</h1>
+<!DOCTYPE html>
+<html>
+  {% include head.html %}
+  <body>
+  <header>
+    <div class="content-wrapper">
+      <h1 class="title">{{ site.title }}</h1>
+      <h2 class="subtitle">{{site.tagline}}</h2>
+    </div>
   </header>
 
-  <div class="post-content">
-    {{ content }}
-  </div>
+  <section class="content">
+    <div class="content-wrapper page-body">
+      <h1>{{page.title}}</h1>
 
-</article>
+      {{content}}
+
+
+    </div>
+  </section>
+
+  {% include footer.html %}
+
+  </body>
+</html>

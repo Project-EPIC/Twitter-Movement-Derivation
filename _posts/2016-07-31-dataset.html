@@ -1,0 +1,122 @@
+---
+layout: interactive_map
+title:  "Dataset"
+date:   2016-06-16 13:08:14 -0400
+categories: osm editing history
+permalink: /dataset
+---
+
+<script src="{{site.baseurl}}/assets/js/filters.js"></script>
+
+<!--  New Controller for handling larger tilesets that include years as different layers-->
+<script src="{{site.baseurl}}/assets/js/tile_layers_control.js"></script>
+
+<script type="text/javascript">
+
+  //These will get compressed to be just 1 source :)
+  var zoneATweetsVectorSource = new VectorTileSource({MapboxVectorTileSetID: 'jenningsanderson.5l1iajqk'})
+
+  // Access Mapbox and get the base map!
+    mapboxgl.accessToken = 'pk.eyJ1IjoiamVubmluZ3NhbmRlcnNvbiIsImEiOiIzMHZndnpvIn0.PS-j7fRK3HGU7IE8rbLT9A';
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/dark-v8',
+        center: [-73.8215,40.7748],
+        zoom: 5,
+        hash: true
+    });
+
+
+  //On map load, add all the sources and process the tilesets above
+
+  map.on('load',function(){
+    //Iterate over all the available tileSets listed above, adding them as yearLayer objects:
+
+    zoneATweetsVectorSource.addSourceToMap()
+
+
+    console.log(zoneATweetsVectorSource)
+
+    map.addLayer({
+      'id': 'all-zone-a-tweets',
+      'minzoom':2,
+      'type': 'circle',
+      'source': zoneATweetsVectorSource.sourceID,
+      'source-layer': 'all_zone_ageojsonl',
+      'paint' : {
+        'circle-color':'blue',
+        'circle-radius':5,
+        'circle-opacity':0.9
+      }
+    });
+
+
+    //individual twitterer
+      var src = new mapboxgl.GeoJSONSource({
+        data: "{{site.baseurl}}/assets/geojson/1MissMercedes.geojson"
+      })
+
+      map.addSource('tweet-src',src)
+
+      map.addLayer({
+      "id": "tweet-layer",
+      "type": "circle",
+      "source": "tweet-src",
+      "minzoom":3,
+      "maxzoom":22,
+      "paint":{
+        "circle-radius": 5,
+        "circle-color": {
+          'property': 'cluster',
+          'stops':[
+            [1,'red'],
+            [20,'blue']
+          ]
+        },
+        "circle-opacity": 0.8
+      }
+    })
+  });
+
+
+  // Once the map is loaded, then update Page state and render!
+  map.once('load',function(){
+    // retrievePageState()
+    //tilesController.renderCurrentYear()
+  })
+
+  // Create a popup, but don't add it to the map yet.
+  map.on('mousemove', function (e) {
+    var features = map.queryRenderedFeatures(e.point, {'layers': ['tweet-layer']});
+    map.getCanvas().style.cursor = ((features.length) && map.getZoom()>5)? 'pointer' : '';
+  });
+
+  map.on('click', function(e) {
+    if (map.getZoom() > 5){
+      var features = map.queryRenderedFeatures(e.point, { layers: ['tweet-layer'] });
+      if (!features.length) {
+          return;
+      }
+      map.getCanvas().style.cursor = 'pointer';
+      var feature = features[0];
+      // Populate the popup and set its coordinates
+      // based on the feature found.
+      var popup = new mapboxgl.Popup({
+          closeButton: true,
+          closeOnClick: true
+      }).setLngLat(map.unproject(e.point))
+        .setHTML(JSON.stringify(feature.properties))
+        .addTo(map);
+      }
+  });
+
+
+  // function updateFilters(){
+  //   tilesController.updateFilters()
+  // }
+  // function paint(){
+  //   console.log('Calling paint()')
+  //   tilesController.clearLayers();
+  //   tilesController.renderCurrentYear()
+  // }
+</script>

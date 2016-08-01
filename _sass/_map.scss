@@ -1,0 +1,226 @@
+.left-float{
+  position: absolute;
+  z-index:99;
+  float:left;
+  width: 200px;
+  padding:5px;
+  margin-left: 25px;
+  margin-top: 25px;
+}
+
+.bottom{
+  margin-top: 550px;
+}
+
+.text{
+  display: inline-block;
+}
+
+.invisible{
+  display: none;
+}
+
+.visible{
+  display:block;
+}
+
+.light{
+  color: #EEE;
+}
+
+.center-menu{
+  position: absolute;
+  top: 90px;
+  left: 250px;
+  z-index: 100;
+  width: 300px;
+  height: 50px;
+  margin: 200 auto 0 auto;
+}
+
+h2.text{
+  vertical-align:bottom;
+  color: #FFF;
+}
+
+.sub-title{
+  color: #DDD;
+  font-size: 1.1em;
+  margin-top: 10px;
+}
+.data{
+
+}
+
+.description{
+  color: #EEE;
+}
+
+.transparent{
+  background-color: black;
+  opacity: 0.8;
+}
+
+.gray{
+  background-color: #222;
+}
+
+ul.horizontal{
+  list-style-type:none;
+  display:inline-block;
+}
+
+.invalid{
+  opacity: 0.5;
+}
+
+#currentMinUser{
+  margin-left:10px;
+}
+
+
+/*
+    User Chooser Box
+*/
+
+
+#user-chooser{
+  background-color: #222;
+  width: 250px;
+  height: 300px;
+  position:absolute;
+  margin-left: 25px;
+  top: 300px;
+  padding:5px;
+}
+
+#user-chooser input{
+  width:190px;
+}
+
+#user-chooser .icon:hover{
+  cursor: pointer;
+}
+
+#information-box{
+  z-index:1000;
+  padding: 20px;
+  position:fixed;
+  top: 175px;
+  left: 350px;
+  height: 580px;
+  width: 600px;
+  background-color: #222;
+  opacity: .9;
+  border: 3px solid #444;
+}
+
+.user-list{
+  overflow: scroll;
+  height: 200px;
+}
+
+.user-list li{
+  display: block;
+  padding: 2px;
+  margin: 2px;
+}
+
+.user-list li p{
+  margin: 1px;
+  display: inline-block;
+}
+
+.user-list li p.edits{
+  width:40px;
+  margin-right:10px;
+}
+
+.user-list li.inactive{
+  opacity: 0.25;
+}
+
+.user-list li:hover{
+  cursor:pointer;
+}
+
+
+.button:hover{
+  cursor:pointer
+}
+
+/*
+    User List for Loading External JSON Files...
+*/
+
+#user-list{
+  background-color: #222;
+  width: 250px;
+  height: 400px;
+  position:absolute;
+  left: 20px;
+  top: 250px;
+  display:none;
+}
+
+#user-list ul{
+  list-style-type:none;
+  height:300px;
+  overflow:scroll;
+}
+
+#user-list ul li{
+  display: block;
+  padding: 2px;
+  margin: 1px;
+}
+
+#user-list li p{
+  display: inline-block;
+}
+
+// #user-list li.selected{
+//   background-color: darkred;
+// }
+
+#user-list li:hover{
+  cursor:pointer;
+}
+
+#user-list
+
+
+ol.user-list{
+
+  li.inactive{
+    opacity:0.25;
+  }
+}
+
+ol.user-list li p.goto-button{
+  background-image:url("#{$assets_dir}/icons/goto.png");
+  background-repeat:no-repeat;
+  width: 15px;
+  height: 15px;
+  margin-top:2px;
+  float:right;
+}
+
+ol.user-list li p.delete-button{
+  // background-image:url("#{$assets_dir}/icons/trash.png");
+  // background-repeat:no-repeat;
+  width: 15px;
+  height: 15px;
+  margin-top:2px;
+  float:right;
+}
+
+.mapboxgl-popup-content{
+  max-height: 300px;
+  overflow: scroll;
+}
+
+table.user-popup tr:hover{
+  background-color:#DDD;
+  cursor:pointer
+}
