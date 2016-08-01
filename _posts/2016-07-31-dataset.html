@@ -134,7 +134,7 @@ description: >
     map.addLayer({
       'id': 'gnip-boxes',
       'minzoom':2,
-      'maxzoom':11,
+      'maxzoom':9,
       'type': 'fill',
       'source': 'gnip-boxes-src',
       'paint' : {
@@ -197,7 +197,7 @@ description: >
   })
 
   map.on('mousemove', function(e) {
-    if (map.getZoom() > 11){
+    if (map.getZoom() > 9){
       var features = map.queryRenderedFeatures(e.point, {layers: tweetlayers});
       if (!features.length) { popup.remove(); return; }
       var feature = features[0];
