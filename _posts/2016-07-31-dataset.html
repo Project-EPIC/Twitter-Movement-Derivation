@@ -37,6 +37,13 @@ description: >
   //On map load, add all the sources and process the tilesets above
   tweetlayers = []
 
+  var stops = [
+    [0,1],
+    [4,2],
+    [10,5],
+    [20,10]
+  ]
+
   map.on('load',function(){
     //Iterate over all the available tileSets listed above, adding them as yearLayer objects:
 
@@ -47,16 +54,12 @@ description: >
       'minzoom':2,
       'type': 'circle',
       'source': allTweetsVectorSource.sourceID,
-      'source-layer': 'before_postgeojsonl',
+      'source-layer': 'beforegeojsonl',
       'paint' : {
         'circle-color':"#00FF00",
         'circle-radius':{
-          'stops':[
-            [0,1],
-            [4,2],
-            [10,8],
-            [20,15]
-          ]},
+          'stops':stops
+        },
         'circle-opacity':1
       }
     });
@@ -68,16 +71,12 @@ description: >
       'minzoom':2,
       'type': 'circle',
       'source': allTweetsVectorSource.sourceID,
-      'source-layer': 'during_postgeojsonl',
+      'source-layer': 'duringgeojsonl',
       'paint' : {
         'circle-color':"#FF0000",
         'circle-radius':{
-          'stops':[
-            [0,1],
-            [4,2],
-            [10,8],
-            [20,15]
-          ]},
+          'stops':stops
+        },
         'circle-opacity':1
       }
     });
@@ -89,42 +88,17 @@ description: >
       'minzoom':2,
       'type': 'circle',
       'source': allTweetsVectorSource.sourceID,
-      'source-layer': 'after_postgeojsonl',
+      'source-layer': 'aftergeojsonl',
       'paint' : {
         'circle-color':"#00FFFF",
         'circle-radius':{
-          'stops':[
-            [0,1],
-            [4,2],
-            [10,8],
-            [20,15]
-          ]},
+          'stops':stops
+        },
         'circle-opacity':1
       }
     });
 
     tweetlayers.push('after-storm')
-
-    map.addLayer({
-      'id': 'before-storm-share',
-      'minzoom':2,
-      'type': 'circle',
-      'source': allTweetsVectorSource.sourceID,
-      'source-layer': 'before_sharegeojsonl',
-      'paint' : {
-        'circle-color':"#FF00FF",
-        'circle-radius':{
-          'stops':[
-            [0,1],
-            [4,2],
-            [10,8],
-            [20,15]
-          ]},
-        'circle-opacity':1
-      }
-    });
-
-    tweetlayers.push('before-storm-share')
 
     //GNIP Boxes
     var boxes_src = new mapboxgl.GeoJSONSource({
@@ -243,6 +217,6 @@ description: >
     return `<table class="formatted-tweet">
       <tr><td class="tweet-field">User</td><td>${properties.user}</td></tr>
       <tr><td class="tweet-field">Time</td><td>${properties.time}</td></tr>
-      <tr><td class="tweet-field">Text</td><td>${properties.text}</td></tr></table>`
+      <tr><td class="tweet-field">Text</td><td>${decodeURIComponent(properties.text)}</td></tr></table>`
   }
 </script>
