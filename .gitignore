@@ -4,5 +4,6 @@
 *.jsonl
 *data/*
 *.mbtiles
+*.txt
 *.hdfs/
 *.ipynb_checkpoints/
