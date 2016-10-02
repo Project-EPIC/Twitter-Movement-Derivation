@@ -1,4 +1,4 @@
-Twitter Movement Deviation 
+Twitter Movement Derivation 
 ==========================
 
 Can a _geographically vulnerable_ user be identified by their Twitter behavior?
