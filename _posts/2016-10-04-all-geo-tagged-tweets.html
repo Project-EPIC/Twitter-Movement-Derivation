@@ -1,0 +1,115 @@
+---
+layout: interactive_map
+title:  "All Sandy GeoTagged Tweets"
+date:   2016-07-31 20:08:14 -0400
+permalink: /sandy-tweets
+
+description: >
+  All Geo-Taged Tweets from Hurricane Sandy
+---
+
+<script src="{{site.baseurl}}/assets/js/filters.js"></script>
+
+<!--  New Controller for handling larger tilesets that include years as different layers-->
+<script src="{{site.baseurl}}/assets/js/tile_layers_control.js"></script>
+
+<script type="text/javascript">
+
+  var stops = [
+    [0,1],
+    [4,2],
+    [10,5],
+    [20,10]
+  ]
+
+  var blur = [
+    [0,3],
+    [4,2],
+    [10,1],
+    [14,0]
+  ]
+
+  //These will get compressed to be just 1 source :)
+  var allTweetsVectorSource = new VectorTileSource({MapboxVectorTileSetID: 'jenningsanderson.5movf9di'})
+
+  // Access Mapbox and get the base map!
+    mapboxgl.accessToken = 'pk.eyJ1IjoiamVubmluZ3NhbmRlcnNvbiIsImEiOiIzMHZndnpvIn0.PS-j7fRK3HGU7IE8rbLT9A';
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/dark-v8',
+        center: [-73.184,39.775],
+        zoom: 4,
+        hash: true,
+        minZoom:3
+    });
+
+
+  //On map load, add all the sources and process the tilesets above
+  tweetlayers = []
+
+
+  map.on('load',function(){
+    //Iterate over all the available tileSets listed above, adding them as yearLayer objects:
+
+    allTweetsVectorSource.addSourceToMap()
+
+    map.addLayer({
+      'id': 'tweets',
+      'minzoom':3,
+      'type': 'circle',
+      'source': allTweetsVectorSource.sourceID,
+      'source-layer': 'sandy-ard8w7',
+      'paint' : {
+        'circle-color':"#00FF00",
+        'circle-radius': {
+          stops: stops
+        },
+        'circle-blur': {
+          stops: blur
+        },
+        'circle-opacity':1
+      }
+    });
+
+    tweetlayers.push('tweets')
+  });
+
+  // Once the map is loaded, then update Page state and render!
+  map.once('load',function(){
+    // retrievePageState()
+    //tilesController.renderCurrentYear()
+  })
+
+  // Create a popup, but don't add it to the map yet.
+
+  var popup = new mapboxgl.Popup({
+      closeButton: true,
+      closeOnClick: true
+  })
+
+  map.on('mousemove', function(e) {
+    if (map.getZoom() > 9){
+      var features = map.queryRenderedFeatures(e.point, {layers: tweetlayers});
+      if (!features.length) { popup.remove(); return; }
+      var feature = features[0];
+      map.getCanvas().style.cursor = 'pointer';
+      popup.setLngLat(map.unproject(e.point))
+        .setHTML(formattedTweet(feature.properties))
+        .addTo(map);
+    }else{
+      var features = map.queryRenderedFeatures(e.point, {layers: ['gnip-boxes']});
+      map.getCanvas().style.cursor = ((features.length) && map.getZoom()>5)? 'pointer' : '';
+    }
+  });
+
+  map.on("mouseout", function() {
+    popup.remove()
+  });
+
+  var formattedTweet = function(properties){
+    return `<table class="formatted-tweet">
+      <tr><td class="tweet-field">User</td><td>${properties.name}</td></tr>
+      <tr><td class="tweet-field">Time</td><td>${properties.time}</td></tr>
+      <tr><td class="tweet-field">Text</td><td>${decodeURIComponent(properties.text)}</td></tr></table>`
+  }
+</script>
