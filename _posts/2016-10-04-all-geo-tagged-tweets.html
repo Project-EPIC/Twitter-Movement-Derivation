@@ -23,30 +23,29 @@ description: >
   ]
 
   var blur = [
-    [0,3],
-    [4,2],
-    [10,1],
+    [0,1],
+    [2,1.5],
+    [10,0.5],
     [14,0]
   ]
 
   //These will get compressed to be just 1 source :)
-  var allTweetsVectorSource = new VectorTileSource({MapboxVectorTileSetID: 'jenningsanderson.5movf9di'})
+  var allTweetsVectorSource = new VectorTileSource({MapboxVectorTileSetID: 'jenningsanderson.0ufua4jn'})
 
   // Access Mapbox and get the base map!
     mapboxgl.accessToken = 'pk.eyJ1IjoiamVubmluZ3NhbmRlcnNvbiIsImEiOiIzMHZndnpvIn0.PS-j7fRK3HGU7IE8rbLT9A';
     var map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/mapbox/dark-v8',
+        style: 'mapbox://styles/jenningsanderson/cimfkj9i500psa6m4kk5lbf8w',
         center: [-73.184,39.775],
-        zoom: 4,
+        zoom: 2,
         hash: true,
-        minZoom:3
+        minZoom: 1.45
     });
 
 
   //On map load, add all the sources and process the tilesets above
   tweetlayers = []
-
 
   map.on('load',function(){
     //Iterate over all the available tileSets listed above, adding them as yearLayer objects:
@@ -55,10 +54,10 @@ description: >
 
     map.addLayer({
       'id': 'tweets',
-      'minzoom':3,
+      'minzoom':1,
       'type': 'circle',
       'source': allTweetsVectorSource.sourceID,
-      'source-layer': 'sandy-ard8w7',
+      'source-layer': 'simple_tweetgeojsonl',
       'paint' : {
         'circle-color':"#00FF00",
         'circle-radius': {
@@ -76,40 +75,40 @@ description: >
 
   // Once the map is loaded, then update Page state and render!
   map.once('load',function(){
-    // retrievePageState()
+    retrievePageState()
     //tilesController.renderCurrentYear()
   })
 
   // Create a popup, but don't add it to the map yet.
 
-  var popup = new mapboxgl.Popup({
-      closeButton: true,
-      closeOnClick: true
-  })
+  // var popup = new mapboxgl.Popup({
+  //     closeButton: true,
+  //     closeOnClick: true
+  // })
 
-  map.on('mousemove', function(e) {
-    if (map.getZoom() > 9){
-      var features = map.queryRenderedFeatures(e.point, {layers: tweetlayers});
-      if (!features.length) { popup.remove(); return; }
-      var feature = features[0];
-      map.getCanvas().style.cursor = 'pointer';
-      popup.setLngLat(map.unproject(e.point))
-        .setHTML(formattedTweet(feature.properties))
-        .addTo(map);
-    }else{
-      var features = map.queryRenderedFeatures(e.point, {layers: ['gnip-boxes']});
-      map.getCanvas().style.cursor = ((features.length) && map.getZoom()>5)? 'pointer' : '';
-    }
-  });
-
-  map.on("mouseout", function() {
-    popup.remove()
-  });
-
-  var formattedTweet = function(properties){
-    return `<table class="formatted-tweet">
-      <tr><td class="tweet-field">User</td><td>${properties.name}</td></tr>
-      <tr><td class="tweet-field">Time</td><td>${properties.time}</td></tr>
-      <tr><td class="tweet-field">Text</td><td>${decodeURIComponent(properties.text)}</td></tr></table>`
-  }
+  // map.on('mousemove', function(e) {
+  //   if (map.getZoom() > 9){
+  //     var features = map.queryRenderedFeatures(e.point, {layers: tweetlayers});
+  //     if (!features.length) { popup.remove(); return; }
+  //     var feature = features[0];
+  //     map.getCanvas().style.cursor = 'pointer';
+  //     popup.setLngLat(map.unproject(e.point))
+  //       .setHTML(formattedTweet(feature.properties))
+  //       .addTo(map);
+  //   }else{
+  //     var features = map.queryRenderedFeatures(e.point, {layers: ['gnip-boxes']});
+  //     map.getCanvas().style.cursor = ((features.length) && map.getZoom()>5)? 'pointer' : '';
+  //   }
+  // });
+  //
+  // map.on("mouseout", function() {
+  //   popup.remove()
+  // });
+  //
+  // var formattedTweet = function(properties){
+  //   return `<table class="formatted-tweet">
+  //     <tr><td class="tweet-field">User</td><td>${properties.name}</td></tr>
+  //     <tr><td class="tweet-field">Time</td><td>${properties.time}</td></tr>
+  //     <tr><td class="tweet-field">Text</td><td>${decodeURIComponent(properties.text)}</td></tr></table>`
+  // }
 </script>
