@@ -4,6 +4,8 @@ title:  "All Sandy GeoTagged Tweets"
 date:   2016-07-31 20:08:14 -0400
 permalink: /sandy-tweets
 
+baseTileFilters: true
+
 description: >
   All Geo-Taged Tweets from Hurricane Sandy
 ---
@@ -47,6 +49,13 @@ description: >
   //On map load, add all the sources and process the tilesets above
   tweetlayers = []
 
+  var hourFilter = function(){
+    return( [ 'all',
+              ["<=",'h', globalVars.hours ],
+            ] )
+    }
+
+
   map.on('load',function(){
     //Iterate over all the available tileSets listed above, adding them as yearLayer objects:
 
@@ -69,15 +78,44 @@ description: >
         'circle-opacity':1
       }
     });
-
-    tweetlayers.push('tweets')
+    // tweetlayers.push('tweets')
   });
+
 
   // Once the map is loaded, then update Page state and render!
   map.once('load',function(){
     retrievePageState()
     //tilesController.renderCurrentYear()
   })
+
+  addBaseTileControlObjects([
+    `<label class="light text">Start: October 25, 2012</label><br>
+      <input class="text" id="hours" type="range" name="hours" min="1" max="500" value="500">
+      <p class="text light" id="currentHours">1</p>`])
+
+  var maxHoursController = new InputControl({
+    getVar: 'hours',
+    htmlID: 'hours',
+    def:    500,
+    htmlVis: 'currentHours',
+  })
+  inputControls.push(maxHoursController)
+  maxHoursController.registerHTMLInput()
+
+  baseDate = 1351144800*1000
+
+  maxHoursController.setHTMLVis = function(val){
+    console.log(val)
+    var date = new Date(baseDate + (val * 3600 * 1000))
+    console.log(date)
+    document.querySelector(`#currentHours`).innerHTML = ('End: '+
+      (date.getMonth()+1) + '-' + date.getDate() + '-' + date.getFullYear() + " " + date.getHours() + ":00"
+    )
+  }
+
+  function updateFilters(){
+    map.setFilter('tweets', hourFilter());
+  }
 
   // Create a popup, but don't add it to the map yet.
 
