@@ -13,9 +13,9 @@ Can we then determine their movement during a storm?
 
 3. The `DataProcessing` directory filters all of the tweets by time (before, during, and after), and creates tilesets for visualizations.
 
+4. Shelter-In-Place looks for users who _stayed_.
 
-
-
+5. Evacuation looks for users who left at some point _before_ landfall.
 
 
 
