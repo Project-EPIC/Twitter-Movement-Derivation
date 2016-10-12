@@ -9,6 +9,10 @@
     <link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}">
     <link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ "/feed.xml" | prepend: site.baseurl | prepend: site.url }}">
 
+    {% if page.css %}
+      <link rel="stylesheet" href="{{site.baseurl}}/{{page.css}}">
+    {% endif %}
+
     <link rel="stylesheet" href="{{ "/css/main.css" | prepend: site.baseurl }}">
 
     <!--  Mapbox Styles and Mapbox GL-->
@@ -20,6 +24,7 @@
         #left-container{position:fixed; top:0px; left:0px; width:250px; height:100%;}
         #map{position:fixed; left:0px; top:0px; width:100%; height:100%; z-index:50;}
     </style>
+
   </head>
 
   <body>

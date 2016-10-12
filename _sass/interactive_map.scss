@@ -239,3 +239,19 @@ td.tweet-field{
   width:50px;
   font-weight:800;
 }
+
+.noUi-connect{
+  background:#3887be;
+}
+.noUi-handle:before{
+  height:10px;
+}
+.noUi-handle:after{
+  height:10px;
+}
+.noUi-horizontal .noUi-handle{
+  height:20px;
+}
+.noUi-draggable{
+  cursor: ew-resize;
+}
