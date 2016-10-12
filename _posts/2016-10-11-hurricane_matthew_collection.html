@@ -1,0 +1,249 @@
+---
+layout: interactive_map
+title:  "Hurricane Matthew"
+date:   2016-10-11 21:30:00 -0400
+permalink: /matthew_collection
+
+description: >
+  Storm Path &amp; Collection Information<br><br>
+  The <span style="color:red;">red polygon</span> shows the simplified polygon
+  of the best track windswath as obtained from the National Hurricane Center.
+  <br>
+  <p>The different levels are 3 Radii:
+  <ol style="margin:0; padding:0; margin-top:-1em;">
+    <li style="padding-left:20px;">34</li>
+    <li style="padding-left:20px;">50</li>
+    <li style="padding-left:20px;">64</li>
+  </ol>
+  </p>
+  <br>
+  The <span style="color:blue;">blue polygons</span> show the areas of Eastern Florida
+  that were under mandatory evacuation.
+
+css: 'assets/lib/nouislider.min.css'
+---
+
+<!-- <div id="timeline" style="width:75%; height:50; display:block; position:absolute; top:10px; left: 260px; auto; white; z-index: 1000;">
+
+  <div class="sliders" id="hoursSlider" style="width:80%; display:inline-block; height:10px"></div>
+
+  <button id='start-right'style="float:right; margin:0px 2px;">></button>
+  <span id="handle1-span" style="float:right; color: white;"></span>
+  <button id='start-left' style="float:right; margin:0px 2px;"><</button>
+  <br>
+  <button id='end-right'  style="float:right; margin:0px 2px;">></button>
+  <span id="handle2-span" style="float:right; color: white;"></span>
+  <button id='end-left'   style="float:right; margin:0px 2px;"><</button>
+  <br>
+  <input id="lockrange" style="float:right;" type="checkbox"/>
+  <label for="lockrange" style="float:right; color:white;">Lock Range</label>
+
+  <input id="stepValue" value="02" style="float:right;padding:0 2px;margin-right:5px;width:25px;height:1.2em;" type="text"/></input>
+  <label for="lockrange" style="float:right; color:white;">Step</label>
+
+</div> -->
+
+<!-- <script src="{{site.baseurl}}/assets/lib/nouislider.min.js"></script> -->
+
+<script src="{{site.baseurl}}/assets/js/filters.js"></script>
+
+<!--  New Controller for handling larger tilesets that include years as different layers-->
+<script src="{{site.baseurl}}/assets/js/tile_layers_control.js"></script>
+
+<script type="text/javascript">
+
+  // //These will get compressed to be just 1 source :)
+  // var allTweetsVectorSource = new VectorTileSource({MapboxVectorTileSetID: 'jenningsanderson.0ufua4jn'})
+
+  // Access Mapbox and get the base map!
+    mapboxgl.accessToken = 'pk.eyJ1IjoiamVubmluZ3NhbmRlcnNvbiIsImEiOiIzMHZndnpvIn0.PS-j7fRK3HGU7IE8rbLT9A';
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/light-v9',
+        center: [-70.78,28.53],
+        zoom: 3.5,
+        hash: true,
+        minZoom: 1.45
+    });
+
+  map.on('load',function(){
+
+    //FL Evac Zones
+    map.addSource('FL_Evac', {
+      data: "{{site.baseurl}}/assets/geojson/FL_Evac_Zones_NoAttrs.geojson",
+      type: 'geojson'
+    })
+
+    map.addLayer({
+      'id': 'FL_Evac',
+      'source':'FL_Evac',
+      'type': 'fill',
+      'paint':{
+        'fill-color':'blue',
+        'fill-outline-color':'black',
+        'fill-opacity':0.4
+      }
+    })
+
+    //Windswath
+    map.addSource('windswath', {
+      data: "{{site.baseurl}}/assets/geojson/best_track_windswath.geojson",
+      type: 'geojson'
+    })
+
+    map.addLayer({
+      'id': 'windswath',
+      'source':'windswath',
+      'type': 'fill',
+      'paint':{
+        'fill-color':'red',
+        'fill-outline-color':'black',
+        'fill-opacity':0.2
+      }
+    })
+
+
+
+
+
+
+    // allTweetsVectorSource.addSourceToMap()
+
+  //   map.addLayer({
+  //     'id': 'tweets',
+  //     'minzoom':1,
+  //     'type': 'circle',
+  //     'source': allTweetsVectorSource.sourceID,
+  //     'source-layer': 'simple_tweetgeojsonl',
+  //     'paint' : {
+  //       'circle-color':"#00FF00",
+  //       'circle-radius': {
+  //         stops: stops
+  //       },
+  //       'circle-blur': {
+  //         stops: blur
+  //       },
+  //       'circle-opacity':1
+  //     }
+  //   });
+  });
+
+  /*
+      MAKE FUN SLIDERS
+  */
+  // Store the locked state and slider values.
+  // var lockedState = false,
+  //     lockedSlider = false,
+  //     lockedValues = [0,500]
+  //     slider = document.getElementById('hoursSlider'),
+  //     // lockButton = document.getElementById('lockbutton');
+  //     handle1Value = document.getElementById('handle1-span'),
+  //     handle2Value = document.getElementById('handle2-span');
+  //
+  // // When the button is clicked, the locked
+  // // state is inverted.
+  // // lockButton.addEventListener('click', function(){
+  // // 	lockedState = !lockedState;
+  // // 	this.textContent = lockedState ? 'Unlock Slider Range' : 'Lock Slider Range';
+  // // });
+  //
+  // // function crossUpdate ( value, slider ) {
+  // // 	// If the sliders aren't interlocked, don't
+  // // 	// cross-update.
+  // // 	if ( !lockedState ) return;
+  // //
+  // // 	// Select whether to increase or decrease
+  // // 	// the other slider value.
+  // // 	var a = slider1 === slider ? 0 : 1, b = a ? 0 : 1;
+  // //
+  // // 	// Offset the slider value.
+  // // 	value -= lockedValues[b] - lockedValues[a];
+  // //
+  // // 	// Set the value
+  // // 	slider.noUiSlider.set(value);
+  // // }
+  //
+  // noUiSlider.create(slider, {
+  // 	start: [0,500],
+  // 	animate: false,
+  //   step: 1,
+  //   margin: 1,
+  //   behaviour: 'snap-drag',
+  //   connect: [false,true,false],
+  // 	range: {
+  // 		min: [0,1],
+  // 		max: [699,700]
+  // 	}
+  // });
+  //
+  // var baseDate = 1351144800*1000
+  //
+  // function pad0(t){
+  //   if (t<10){
+  //     return "0"+t
+  //   }else{
+  //     return ""+t
+  //   }
+  // }
+  //
+  // function convertHoursToDate(val){
+  //   var date = new Date(baseDate + (Number(val) * 3600 * 1000))
+  //   return date.getMonth()+1 + '-' + pad0(date.getDate()) + '-' + date.getFullYear() + " " + pad0(date.getHours())+ ":00"
+  // }
+  //
+  // map.once('load',function(){
+  //   slider.noUiSlider.on('update', function( values, handle ){
+  // 	  handle1Value.innerHTML = convertHoursToDate(values[0]);
+  //     handle2Value.innerHTML = convertHoursToDate(values[1]);
+  //     map.setFilter('tweets',
+  //          [ 'all',
+  //             [">=",'h', Number(values[0]) ],
+  //             ["<=",'h', Number(values[1]) ]
+  //           ] )
+  //   });
+  // })
+  //
+  //
+  // var stepper = document.getElementById('stepValue')
+  // var stepValue = Number(stepper.value)
+  // stepper.addEventListener('change',function(){
+  //   stepValue = Number(this.value)
+  // })
+  //
+  // var rangeLocker = document.getElementById('lockrange')
+  // var rangeLocked = rangeLocker.checked
+  // rangeLocker.addEventListener('change',function(){
+  //   rangeLocked = rangeLocker.checked
+  // })
+  //
+  // document.getElementById('start-right').addEventListener('click',function(){
+  //   slider.noUiSlider.set( [Number(slider.noUiSlider.get()[0]) + stepValue, null] )
+  //   if(rangeLocked){
+  //     slider.noUiSlider.set( [null, Number(slider.noUiSlider.get()[1]) + stepValue] )
+  //   }
+  // })
+  //
+  // document.getElementById('start-left').addEventListener('click',function(){
+  //   slider.noUiSlider.set( [Number(slider.noUiSlider.get()[0]) - stepValue, null] )
+  //   if(rangeLocked){
+  //     slider.noUiSlider.set( [null, Number(slider.noUiSlider.get()[1]) - stepValue] )
+  //   }
+  // })
+  //
+  // document.getElementById('end-right').addEventListener('click',function(){
+  //   slider.noUiSlider.set( [null, Number(slider.noUiSlider.get()[1]) + stepValue] )
+  //   if(rangeLocked){
+  //     slider.noUiSlider.set( [Number(slider.noUiSlider.get()[0]) + stepValue, null] )
+  //   }
+  // })
+  //
+  // document.getElementById('end-left').addEventListener('click',function(){
+  //   slider.noUiSlider.set( [null, Number(slider.noUiSlider.get()[1]) - stepValue] )
+  //   if(rangeLocked){
+  //     slider.noUiSlider.set( [Number(slider.noUiSlider.get()[0]) - stepValue, null] )
+  //   }
+  // })
+  //
+  // document.querySelector('#sideBarToggle').click()
+
+</script>
