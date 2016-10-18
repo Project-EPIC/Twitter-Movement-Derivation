@@ -50,21 +50,17 @@ section.page-content{
 
 .post-item{
   margin-left:0;
-  background-color:lightblue;
+  background-color: gray;
   padding: 20px;
 }
 
-h2.post-title{
-  color:black;
-}
-
 h2.post-title a{
-  color:black;
+  color:white;
   text-decoration:none;
 }
 
 h2.post-title a:hover{
-  text-decoration:overline underline
+  text-decoration: underline
 }
 
 
