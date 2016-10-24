@@ -213,6 +213,30 @@ css: 'assets/lib/nouislider.min.css'
     }
   })
 
+  var notPlaying = true
+  var i;
+  window.addEventListener('keyup',function(e){
+    if (e.code==="Space"){
+      if(notPlaying){
+        notPlaying = false
+        console.log('Starting Play')
+        i = setInterval(function(){
+          document.getElementById('end-right').click()
+          if (Number(slider.noUiSlider.get()[1]) > 698){
+            notPlaying = true
+            console.log("Stopping")
+            clearInterval(i)
+          }
+        }, 1500);
+      }else{
+        console.log("StoppingPlay")
+        console.log(slider.noUiSlider.get())
+        notPlaying = true
+        clearInterval(i)
+      }
+    }
+  })
+
   document.getElementById('end-left').addEventListener('click',function(){
     slider.noUiSlider.set( [null, Number(slider.noUiSlider.get()[1]) - stepValue] )
     if(rangeLocked){
@@ -221,5 +245,4 @@ css: 'assets/lib/nouislider.min.css'
   })
 
   document.querySelector('#sideBarToggle').click()
-
 </script>
