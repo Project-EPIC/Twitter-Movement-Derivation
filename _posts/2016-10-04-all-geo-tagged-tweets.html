@@ -47,10 +47,22 @@ css: 'assets/lib/nouislider.min.css'
 
   var blur = [
     [0,1],
-    [2,1.5],
+    [2,0.9],
     [10,0.5],
     [14,0]
   ]
+
+  var colors = {
+    'property':'h',
+    'stops':[
+      [0,'green'],
+      [48,'yellow'],
+      [96,'orange'],
+      [120,'red'],
+      [150,'yellow'],
+      [200,'green']
+    ]
+  }
 
   //These will get compressed to be just 1 source :)
   var allTweetsVectorSource = new VectorTileSource({MapboxVectorTileSetID: 'jenningsanderson.0ufua4jn'})
@@ -78,7 +90,7 @@ css: 'assets/lib/nouislider.min.css'
       'source': allTweetsVectorSource.sourceID,
       'source-layer': 'simple_tweetgeojsonl',
       'paint' : {
-        'circle-color':"#00FF00",
+        'circle-color':colors,
         'circle-radius': {
           stops: stops
         },
