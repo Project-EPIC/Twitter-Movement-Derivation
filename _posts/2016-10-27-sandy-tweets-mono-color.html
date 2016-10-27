@@ -1,0 +1,250 @@
+---
+layout: interactive_map
+title:  "All Sandy GeoTagged Tweets: Monocolor"
+date:   2016-10-27 12:08:14 -0400
+permalink: /sandy-tweets-green
+
+description: >
+  All Geo-Taged Tweets from Hurricane Sandy
+
+css: 'assets/lib/nouislider.min.css'
+---
+
+<div id="timeline" style="width:75%; height:50; display:block; position:absolute; top:10px; left: 260px; auto; white; z-index: 1000;">
+
+  <div class="sliders" id="hoursSlider" style="width:80%; display:inline-block; height:10px"></div>
+
+  <button id='start-right'style="float:right; margin:0px 2px;">></button>
+  <span id="handle1-span" style="float:right; color: white;"></span>
+  <button id='start-left' style="float:right; margin:0px 2px;"><</button>
+  <br>
+  <button id='end-right'  style="float:right; margin:0px 2px;">></button>
+  <span id="handle2-span" style="float:right; color: white;"></span>
+  <button id='end-left'   style="float:right; margin:0px 2px;"><</button>
+  <br>
+  <input id="lockrange" style="float:right;" type="checkbox"/>
+  <label for="lockrange" style="float:right; color:white;">Lock Range</label>
+
+  <input id="stepValue" value="02" style="float:right;padding:0 2px;margin-right:5px;width:25px;height:1.2em;" type="text"/></input>
+  <label for="lockrange" style="float:right; color:white;">Step</label>
+
+</div>
+<script src="{{site.baseurl}}/assets/lib/nouislider.min.js"></script>
+
+<script src="{{site.baseurl}}/assets/js/filters.js"></script>
+
+<!--  New Controller for handling larger tilesets that include years as different layers-->
+<script src="{{site.baseurl}}/assets/js/tile_layers_control.js"></script>
+
+<script type="text/javascript">
+
+  var stops = [
+    [0,1],
+    [4,2],
+    [10,5],
+    [20,10]
+  ]
+
+  var blur = [
+    [0,1],
+    [2,0.9],
+    [10,0.5],
+    [14,0]
+  ]
+  //
+  // var colors = {
+  //   'property':'h',
+  //   'stops':[
+  //     [0,'#00FF00'],
+  //     [48,'yellow'],
+  //     [96,'orange'],
+  //     [120,'#FF0000'],
+  //     [150,'yellow'],
+  //     [200,'#00FF00']
+  //   ]
+  // }
+
+  colors = "#00FF00"
+
+  //These will get compressed to be just 1 source :)
+  var allTweetsVectorSource = new VectorTileSource({MapboxVectorTileSetID: 'jenningsanderson.0ufua4jn'})
+
+  // Access Mapbox and get the base map!
+    mapboxgl.accessToken = 'pk.eyJ1IjoiamVubmluZ3NhbmRlcnNvbiIsImEiOiIzMHZndnpvIn0.PS-j7fRK3HGU7IE8rbLT9A';
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/jenningsanderson/ciu68gumf00ec2hqhxvi6moas',
+        center: [-73.184,39.775],
+        zoom: 2,
+        hash: true,
+        minZoom: 1.45
+    });
+
+  map.on('load',function(){
+    //Iterate over all the available tileSets listed above, adding them as yearLayer objects:
+
+    allTweetsVectorSource.addSourceToMap()
+
+    map.addLayer({
+      'id': 'tweets',
+      'minzoom':1,
+      'type': 'circle',
+      'source': allTweetsVectorSource.sourceID,
+      'source-layer': 'simple_tweetgeojsonl',
+      'paint' : {
+        'circle-color':colors,
+        'circle-radius': {
+          stops: stops
+        },
+        'circle-blur': {
+          stops: blur
+        },
+        'circle-opacity':1
+      }
+    });
+  });
+
+  baseDate = 1351144800*1000
+
+  /*
+      MAKE FUN SLIDERS
+  */
+  // Store the locked state and slider values.
+  var lockedState = false,
+      lockedSlider = false,
+      lockedValues = [0,500]
+      slider = document.getElementById('hoursSlider'),
+      // lockButton = document.getElementById('lockbutton');
+      handle1Value = document.getElementById('handle1-span'),
+      handle2Value = document.getElementById('handle2-span');
+
+  // When the button is clicked, the locked
+  // state is inverted.
+  // lockButton.addEventListener('click', function(){
+  // 	lockedState = !lockedState;
+  // 	this.textContent = lockedState ? 'Unlock Slider Range' : 'Lock Slider Range';
+  // });
+
+  // function crossUpdate ( value, slider ) {
+  // 	// If the sliders aren't interlocked, don't
+  // 	// cross-update.
+  // 	if ( !lockedState ) return;
+  //
+  // 	// Select whether to increase or decrease
+  // 	// the other slider value.
+  // 	var a = slider1 === slider ? 0 : 1, b = a ? 0 : 1;
+  //
+  // 	// Offset the slider value.
+  // 	value -= lockedValues[b] - lockedValues[a];
+  //
+  // 	// Set the value
+  // 	slider.noUiSlider.set(value);
+  // }
+
+  noUiSlider.create(slider, {
+  	start: [0,500],
+  	animate: false,
+    step: 1,
+    margin: 1,
+    behaviour: 'snap-drag',
+    connect: [false,true,false],
+  	range: {
+  		min: [0,1],
+  		max: [699,700]
+  	}
+  });
+
+  var baseDate = 1351144800*1000
+
+  function pad0(t){
+    if (t<10){
+      return "0"+t
+    }else{
+      return ""+t
+    }
+  }
+
+  function convertHoursToDate(val){
+    var date = new Date(baseDate + (Number(val) * 3600 * 1000))
+    return date.getMonth()+1 + '-' + pad0(date.getDate()) + '-' + date.getFullYear() + " " + pad0(date.getHours())+ ":00"
+  }
+
+  map.once('load',function(){
+    slider.noUiSlider.on('update', function( values, handle ){
+  	  handle1Value.innerHTML = convertHoursToDate(values[0]);
+      handle2Value.innerHTML = convertHoursToDate(values[1]);
+      map.setFilter('tweets',
+           [ 'all',
+              [">=",'h', Number(values[0]) ],
+              ["<=",'h', Number(values[1]) ]
+            ] )
+    });
+  })
+
+
+  var stepper = document.getElementById('stepValue')
+  var stepValue = Number(stepper.value)
+  stepper.addEventListener('change',function(){
+    stepValue = Number(this.value)
+  })
+
+  var rangeLocker = document.getElementById('lockrange')
+  var rangeLocked = rangeLocker.checked
+  rangeLocker.addEventListener('change',function(){
+    rangeLocked = rangeLocker.checked
+  })
+
+  document.getElementById('start-right').addEventListener('click',function(){
+    slider.noUiSlider.set( [Number(slider.noUiSlider.get()[0]) + stepValue, null] )
+    if(rangeLocked){
+      slider.noUiSlider.set( [null, Number(slider.noUiSlider.get()[1]) + stepValue] )
+    }
+  })
+
+  document.getElementById('start-left').addEventListener('click',function(){
+    slider.noUiSlider.set( [Number(slider.noUiSlider.get()[0]) - stepValue, null] )
+    if(rangeLocked){
+      slider.noUiSlider.set( [null, Number(slider.noUiSlider.get()[1]) - stepValue] )
+    }
+  })
+
+  document.getElementById('end-right').addEventListener('click',function(){
+    slider.noUiSlider.set( [null, Number(slider.noUiSlider.get()[1]) + stepValue] )
+    if(rangeLocked){
+      slider.noUiSlider.set( [Number(slider.noUiSlider.get()[0]) + stepValue, null] )
+    }
+  })
+
+  var notPlaying = true
+  var i;
+  window.addEventListener('keyup',function(e){
+    if (e.code==="Space"){
+      if(notPlaying){
+        notPlaying = false
+        console.log('Starting Play')
+        i = setInterval(function(){
+          document.getElementById('end-right').click()
+          if (Number(slider.noUiSlider.get()[1]) > 698){
+            notPlaying = true
+            console.log("Stopping")
+            clearInterval(i)
+          }
+        }, 1500);
+      }else{
+        console.log("StoppingPlay")
+        console.log(slider.noUiSlider.get())
+        notPlaying = true
+        clearInterval(i)
+      }
+    }
+  })
+
+  document.getElementById('end-left').addEventListener('click',function(){
+    slider.noUiSlider.set( [null, Number(slider.noUiSlider.get()[1]) - stepValue] )
+    if(rangeLocked){
+      slider.noUiSlider.set( [Number(slider.noUiSlider.get()[0]) - stepValue, null] )
+    }
+  })
+
+  document.querySelector('#sideBarToggle').click()
+</script>
