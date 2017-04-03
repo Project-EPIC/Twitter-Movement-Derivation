@@ -26,10 +26,7 @@ Data is retrieved from GNIP for the East Coast during Hurricane Sandy. This proc
 1. `TimeProcessing` then looks at every user's temporal spread over a given week and validates the spatial clustering patterns.
 
 
-
 1. The `TileProcessing` directory filters all of the tweets by time (before, during, and after), and creates tilesets for visualizations.
-
-
 
 
 1. Shelter-In-Place looks for users who _stayed_.
