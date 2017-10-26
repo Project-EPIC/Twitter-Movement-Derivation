@@ -10,3 +10,4 @@ This method looks for users who are tweeting from the evacuation zone at the tim
 Between `_start` and `_end`, `987 users` generated `2,985 tweets` from inside of Zone A.
 
 Investigating each of these users qualitatively, 
+
