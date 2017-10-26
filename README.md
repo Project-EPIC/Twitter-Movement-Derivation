@@ -6,6 +6,21 @@ Can a _geographically vulnerable_ user be identified by their Twitter behavior?
 Can we then determine their movement during a storm?
 
 
+## Repository Layout
+
+1. `Data_Aquisition`: Rules & Metadata Results from GNIP Query (Raw data located at `/data/chime/MovementDerivationGeoGNIP`
+1. `DataProcessing` : 
+
+
+
+
+
+
+
+
+
+
+
 # Methods
 1. Data is retrieved from GNIP for the East Coast during Hurricane Sandy. This process is further outlined in the `Data_Aquisition` Directory. All of these tweets may be viewed here: [epic.cs.colorado.edu/Twitter-Movement-Derivation/dataset](http://epic.cs.colorado.edu/Twitter-Movement-Derivation/dataset)
 
