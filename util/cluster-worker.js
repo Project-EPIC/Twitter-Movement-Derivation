@@ -7,6 +7,10 @@ var fs     = require('fs')
 var _      = require('lodash')
 
 var fileToParse = process.argv[2];
+var fileToWrite = process.argv[3];
+
+var parts       = fileToParse.split('/')
+var fileName    = parts[parts.length-1]
 
 var geojson;
 
@@ -36,11 +40,12 @@ try{
    }
   })
 
-  var distance = 100;
+  var distance  = 1; //kilometers
+  var minPoints = 5;
   var clustered = dbscan({
     type:'FeatureCollection',
     features: withGeometries
-  }, distance);
+  }, distance);//, {minPoints: minPoints});
 
   var clusterGroups = _.groupBy(clustered.features,function(f){return f.properties.cluster})
   var clusterCenters = {}
@@ -78,7 +83,11 @@ try{
     }
   }
 
-  console.log(JSON.stringify(sortedFeatures, null, 2))
+  fs.writeFileSync(fileToWrite+"/"+fileName, JSON.stringify({
+      type:"FeatureCollection",
+      features: sortedFeatures
+    }, null, 2)
+  )
 
   process.send({
     success: true,

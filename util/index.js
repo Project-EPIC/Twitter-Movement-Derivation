@@ -6,12 +6,14 @@ const path = require('path')
 const async = require('async');
 
 const numWorkers  = require('os').cpus().length - 2;
-const inputDir = './test'
+
+const inputDir = 'test/input'
+const outputDir = 'test/output'
 
 //Create global path
 var dirListing = fs.readdirSync(inputDir)
 var inputFiles = dirListing.map(function(f){
-  return path.join( __dirname + '/test/',f)
+  return path.join( __dirname, inputDir,f)
 })
 
 console.warn("Found "+inputFiles.length+" input files")
@@ -22,7 +24,7 @@ var done = 0;
 var q = async.queue(function (filePath, callback) {
 
   //Call the process
-  var child = fork('./cluster-worker', [filePath], {silent: false});
+  var child = fork('./cluster-worker', [filePath, path.join(__dirname, outputDir)], {silent: false});
 
   //Status Logging
   child.on('message', function(message) {
@@ -39,6 +41,6 @@ q.drain = function() {
 }
 
 //Add all the files to be processed to the queue:
-q.push(inputFiles.splice(0,1),function(){
+q.push(inputFiles.splice(0,5),function(){
   return;
 });
