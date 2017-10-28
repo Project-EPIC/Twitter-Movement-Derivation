@@ -29,7 +29,7 @@ var q = async.queue(function (filePath, callback) {
   //Status Logging
   child.on('message', function(message) {
     if (message.success){
-      process.stderr.write("\rProcessed: "+ ++done + " users");
+      process.stderr.write("\rProcessed: "+ ++done + " user. Last fileName: "+message.finished);
     }
     callback()
   });
@@ -40,7 +40,9 @@ q.drain = function() {
   console.warn('\nQueue has been drained');
 }
 
+//inputFiles = ["/Users/jenningsanderson/Documents/Twitter-Movement-Derivation/util/test/input/48hippo.geojson"]
+
 //Add all the files to be processed to the queue:
-q.push(inputFiles.splice(0,5),function(){
+q.push(inputFiles.slice(0,5),function(){
   return;
 });

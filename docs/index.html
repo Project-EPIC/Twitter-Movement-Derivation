@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8' />
+  <title>Clustering Tweeeeets</title>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.35.1/mapbox-gl.js'></script>
+  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.35.1/mapbox-gl.css' rel='stylesheet' />
+
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <link href="https://api.mapbox.com/mapbox-assembly/v0.18.0/assembly.min.css" rel="stylesheet">
+  <script async defer src="https://api.mapbox.com/mapbox-assembly/v0.18.0/assembly.js"></script>
+
+  <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.1.1/mapbox-gl-geocoder.min.js'></script>
+  <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.1.1/mapbox-gl-geocoder.css' type='text/css' />
+
+  <link href="site.css" rel="stylesheet">
+
+</head>
+<body>
+
+<div class='grid grid--gut12'>
+  <div class='col col--4'>
+
+    <div id="left-sidebar">
+      <h2 class="txt-h2 mb12">Clustering Tweets</h2>
+      <nav id="commands">
+        <button class='btn btn--s' id='toggleClusterCenters'>Toggle Cluster Centers</button>
+        <button class='btn btn--s' id='toggleClusterPolys'>Toggle Cluster Polygons</button>
+      </nav>
+      <div id="tweet-table-container">
+        <table id="tweet-table">
+          <thead id="tweet-table-head">
+            <tr><td style="padding-left:10px; width:100px;" class="date">Time</td>
+              <td class="text">Text</td>
+              <td class="speed">Speed</td>
+            </tr>
+          </thead>
+          <tbody id="tweet-table-body" class="viewport-twothirds"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class='col col--8'>
+    <div id='timeline' class='flex-parent flex-parent--center-main'>
+      <svg class="flex-child" id='timeline-svg' width="900" height="100"></svg>
+    </div>
+    <div id='map'></div>
+  </div>
+
+</div>
+
+
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoiamVubmluZ3NhbmRlcnNvbiIsImEiOiIzMHZndnpvIn0.PS-j7fRK3HGU7IE8rbLT9A';
+
+var map = new mapboxgl.Map({
+    container: 'map',
+    zoom: 2,
+    center: [-147.81, 36.93],
+    style: 'mapbox://styles/mapbox/light-v9',
+    hash: true
+});
+var allTimestamps = []
+map.once('load',function(){
+  console.log('map loaded')
+
+  map.addSource('tweets-meta',{
+      type: 'geojson',
+      data: '../util/test/output/48hippo-meta.geojson'
+  })
+
+  map.addLayer({
+    "id": "tweets",
+    "type": "circle",
+    "source" : {
+      type: 'geojson',
+      data: '../util/test/output/48hippo.geojson'
+    },
+    "paint": {
+      "circle-color": {
+        'property':'cluster',
+        'stops' : [
+          [0,'red'],
+          [5,'orange'],
+          [10,'yellow'],
+          [20,'green'],
+          [25,'blue'],
+          [30,'violet']
+        ]
+      },
+      "circle-radius": {
+        'stops':[[0,5],[10,4]]
+      }
+    }
+  });
+
+  map.addLayer({
+    "id": "tweets-meta-hull",
+    "type": "fill",
+    "source": "tweets-meta",
+    "paint": {
+      "fill-color": {
+        'property':'cluster',
+        'stops' : [
+          [0,'red'],
+          [5,'orange'],
+          [10,'yellow'],
+          [20,'green'],
+          [25,'blue'],
+          [30,'violet']
+        ]
+      },
+      "fill-opacity": 0.2
+    }
+  });
+
+  map.addLayer({
+    "id": "tweets-meta-circle",
+    "type": "circle",
+    "source": "tweets-meta",
+    "paint": {
+      "circle-color": {
+        'property':'cluster',
+        'stops' : [
+          [0,'red'],
+          [5,'orange'],
+          [10,'yellow'],
+          [20,'green'],
+          [25,'blue'],
+          [30,'violet']
+        ]
+      },
+      "circle-radius": {
+        'property':'tweetCount',
+        'stops' : [
+          [1,5],
+          [10,10],
+          [1000,100],
+        ]
+      }
+    },
+    "filter":['has','clusterCenter'],
+    "layout":{
+      "visibility":"visible"
+    }
+  });
+
+  var parseDate = d3.timeParse("%Y-%m-%d");
+  d3.json("../util/test/output/48hippo.geojson", function(error, data) {
+    if (error) throw error;
+
+    //This is where tweets get added to a table (too)
+    var prevDateObj = new Date(data.features[0].properties.date)
+    var prevDateStr = prevDateObj.getFullYear() +"-"+(prevDateObj.getMonth()+1)+"-"+prevDateObj.getDate()
+    var prevDate = {date: parseDate(prevDateStr), count: 0}
+    var timelineCounts = []
+    var d, dStr
+
+    var tweetTable = document.getElementById('tweet-table-body')
+    data.features.forEach(function(f){
+      d = new Date(f.properties.date)
+
+      dStr = d.getFullYear() +"-"+(d.getMonth()+1)+"-"+d.getDate()
+      if (dStr==prevDateStr){
+        prevDate.count += 1
+      }else{
+        timelineCounts.push(prevDate) //make sure we're not over writing it
+        prevDateStr = dStr
+        prevDate = {date: parseDate(prevDateStr), count:1}
+      }
+
+      //How about adding it to the table
+      var tr = document.createElement('tr')
+      tr.setAttribute('id','timestamp-'+f.properties.timestamp)
+      allTimestamps.push(f.properties.timestamp)
+      if (f.geometry){
+        tr.classList.add('hasGeo')
+        tr.addEventListener('click',function(e){
+          console.log(this)
+          map.flyTo({zoom: 14, center: f.geometry.coordinates})
+        })
+      }
+      tr.innerHTML += `<td class="date">${d}</td>`
+      tr.innerHTML += `<td class="text">${f.properties.text}</td>`
+      tr.innerHTML += `<td class="speed">${(f.properties.speed)? f.properties.speed.toFixed(2) : ""}</td>`
+      tr.innerHTML += "</td>"
+      tweetTable.appendChild(tr)
+    })
+    timelineCounts.push(prevDate)
+
+    createD3Timeline({
+      docID: "timeline-svg",
+      data:  timelineCounts
+    },function(brushEvent){
+      startTime = Math.floor(brushEvent[0].getTime()/1000)
+      endTime   = Math.floor(brushEvent[1].getTime()/1000)
+      console.log("Updating the map with", brushEvent)
+      console.warn(startTime, endTime)
+      map.setFilter('tweets',[
+        'all',
+        ['>=','timestamp',startTime],
+        ['<=','timestamp',endTime]
+      ])
+      //map.setFilter('tweets-meta-circle',[
+      //  'all',
+      //  ['has','clusterCenter'],
+      //  ['>=','lastTimestamp',endTime],
+      //  ['<=','lastTimestamp',endTime]
+      //])
+      document.getElementById("tweet-table-body").scrollTop = (findPerfectTimestamp(startTime) - 200);
+    })
+  })
+
+  //Interaction
+  map.on('mousemove', function(e){
+    var features = map.queryRenderedFeatures(e.point, {layers: ['tweets']})
+    map.getCanvas().style.cursor = (features.length>0)? 'pointer' : '';
+  });
+
+  map.on('click', function(e){
+    var features = map.queryRenderedFeatures(e.point, {layers: ['tweets']})
+    if(!features.length){return};
+    var props = features[0].properties
+
+    var html = "<table>"
+    html += `<tr><td><span style="margin-right:10px; font-weight:700;">User</span></td><td>${props.user}</td></tr>`
+    html += `<tr><td><span style="margin-right:10px; font-weight:700;">Time</span></td><td>${props.date}</td></tr>`
+    html += `<tr><td><span style="margin-right:10px; font-weight:700;">Text</span></td><td>${decodeURIComponent( props.text.replace(/\+/g,' '))}</td></tr>`
+    html += `<tr><td><span style="margin-right:10px; font-weight:700;">Speed</span></td><td>${props.speed}</td></tr>`
+    html += `<tr><td><span style="margin-right:10px; font-weight:700;">Cluster</span></td><td>${props.cluster}</td></tr>`
+    html += `<tr><td><span style="margin-right:10px; font-weight:700;">TimeDelta</span></td><td>${props.timeDelta}</td></tr>`
+    html += `<tr><td><span style="margin-right:10px; font-weight:700;">timestamp</span></td><td>${props.timestamp}</td></tr>
+    </table>`
+
+    new mapboxgl.Popup({'closeOnClick':true})
+      .setLngLat(e.lngLat)
+      .setHTML(html)
+      .addTo(map);
+  });
+
+  map.on('click', function(e){
+    var features = map.queryRenderedFeatures(e.point, {layers: ['tweets-meta-circle','tweets-meta-hull']})
+    if(!features.length){return};
+    var props = features[0].properties
+
+    var html = JSON.stringify(props)
+
+    new mapboxgl.Popup({'closeOnClick':true})
+      .setLngLat(e.lngLat)
+      .setHTML(html)
+      .addTo(map);
+  });
+
+})
+
+document.getElementById('toggleClusterCenters').addEventListener('click',function(e){
+  var isVisible = map.getLayoutProperty('tweets-meta-circle','visibility')
+  if (isVisible=='visible'){
+    map.setLayoutProperty('tweets-meta-circle','visibility','none')
+  }else{
+    map.setLayoutProperty('tweets-meta-circle','visibility','visible')
+  }
+})
+
+document.getElementById('toggleClusterPolys').addEventListener('click',function(e){
+  var isVisible = map.getLayoutProperty('tweets-meta-hull','visibility')
+  if (isVisible=='visible'){
+    map.setLayoutProperty('tweets-meta-hull','visibility','none')
+  }else{
+    map.setLayoutProperty('tweets-meta-hull','visibility','visible')
+  }
+})
+
+function findPerfectTimestamp(second){
+  for(var i=1; i<allTimestamps.length; i++){
+    if (allTimestamps[i] > second){
+      return document.getElementById('timestamp-'+allTimestamps[i-1]).offsetTop;
+    }
+  }
+  return document.getElementById('timestamp-'+allTimestamps[0]).offsetTop;
+}
+
+// Add zoom and rotation controls to the map.
+map.addControl(new mapboxgl.NavigationControl(),'top-left');
+
+map.addControl(new MapboxGeocoder({
+  accessToken: mapboxgl.accessToken
+}));
+
+map.addControl(new mapboxgl.ScaleControl({
+    maxWidth: 80,
+    unit: 'imperial'
+}));
+
+</script>
+
+<script src="d3-timeline.js"></script>
+<script></script>
+
+</body>
+</html>

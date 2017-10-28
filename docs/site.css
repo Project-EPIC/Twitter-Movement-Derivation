@@ -1,0 +1,62 @@
+body { margin:0; padding:0; }
+#map {
+  width:100%;
+  height: calc(100% - 100px);
+}
+#timeline {
+  height:100px;
+  border-bottom:1px solid black;
+}
+
+.area {
+  fill: steelblue;
+  clip-path: url(#clip);
+}
+
+.zoom {
+  cursor: move;
+  fill: none;
+  pointer-events: all;
+}
+
+#tweet-table{
+  margin-top:10px;
+  overflow:scroll;
+}
+
+#tweet-table-head{
+  display:block;
+}
+
+#tweet-table-body{
+  display:block;
+  overflow-y:scroll;
+}
+
+#tweet-table td.text{
+  width:260px;
+}
+
+#tweet-table-body td{
+  font-size:0.75em;
+  padding-bottom: 10px;
+}
+
+#tweet-table td.date{
+  max-width:100px;
+  padding-right:10px;
+  padding-left: 10px;
+}
+
+#tweet-table-body tr{
+  border-bottom: 1px solid black;
+}
+
+#tweet-table-body tr.hasGeo{
+  background-color: lightgray;
+  cursor:pointer
+}
+
+#tweet-table-body tr.hasGeo:hover{
+  background-color: gray;
+}
