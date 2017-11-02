@@ -12,15 +12,16 @@ var fileToWrite = process.argv[3];
 
 var parts       = fileToParse.split('/')
 var fileName    = parts[parts.length-1]
-
 var metaFileName = fileName.split('.')[0]+'-meta.geojson'
 
 var geojson;
 
-//console.log("In worker: " + process.pid + " with: " + fileToParse)
-
 try{
   geojson = JSON.parse(fs.readFileSync(fileToParse))
+
+  /*
+    Part I : Clustering
+  */
 
   //Get only features with geometry and cluster them
   var withGeometries = []
@@ -51,7 +52,6 @@ try{
   }, distance);//, {minPoints: minPoints});
 
   var clusterGroups = _.groupBy(clustered.features,function(f){return f.properties.cluster})
-
   var clusterCenters = {}
   var metaGeoms = []
 
@@ -77,7 +77,7 @@ try{
     }
   })
 
-  //Break here if we haven't been able to classify anything
+  //Break here if we haven't been able to classify anything?
 
   //Now we merge all the properties back together, sorted by time
   var newFeatures = withoutGeometries.concat(clustered.features).map(function(f){
@@ -88,17 +88,6 @@ try{
   })
 
   var sortedFeatures = _.sortBy(newFeatures, function(f){return f.properties.date})
-
-  var c, p
-  for(var i in sortedFeatures){
-    c = sortedFeatures[i]
-    if (i>0){
-      p = sortedFeatures[i-1]
-      //console.log(c.properties.date)
-      //console.log(c.properties)
-      //console.log(c.properties.date > p.properties.date)
-    }
-  }
 
   //Calculate Speeds
   var prev, cur, speed, timeDelta
@@ -117,6 +106,62 @@ try{
       cur.properties.speed = speed
     }
   }
+
+  /*
+    Part II: Temporal Clustering
+
+           Days
+  0 = Sunday    3 = Wednesday //6 = Saturday
+  1 = Monday    4 = Thursday
+  2 = Tuesday   5 = Friday
+
+           Hours
+  .0 = 0-3      .4 = 12-15 (noon - 3)
+  .1 = 3-6      .5 = 15-18 (3 - 6)
+  .2 = 6-9      .6 = 18-21 (6 - 9)
+  .3 = 9-12     .7 = 21-24 (9 - midnight)
+*/
+
+  var workHours = [
+    1.2, 1.3, 1.4, 1.5,
+    2.2, 2.3, 2.4, 2.5,
+    3.2, 3.3, 3.4, 3.5,
+    4.2, 4.3, 4.4, 4.5,
+    5.2, 5.3, 5.4, 5.5,
+  ]
+  var homeHours = [
+    0.6, 0.7,
+    1.0, 1.1, 1.6, 1.7,
+    2.0, 2.1, 2.6, 2.7,
+    3.0, 3.1, 3.6, 3.7,
+    4.0, 4.1, 4.6, 4.7,
+    5.0, 5.1, 5.6, 5.7,
+  ]
+
+  var gbDay = _.groupBy(sortedFeatures, function(f){return f.properties.date.getDay() + Math.floor(f.properties.date.getHours()/3)/10})
+
+  var homeClusters = []
+  Object.keys(gbDay).forEach(function(key){
+    if (homeHours.indexOf(Number(key))>-1){
+      gbDay[key].map(function(f){
+        if (f.properties.cluster){
+          homeClusters.push(f.properties.cluster)
+        }
+      })
+    }
+  })
+  var counted = _.countBy(homeClusters)
+  var likelyHomeID = _.sortBy(Object.keys(counted), function(a){return -counted[a]})[0]
+
+  if (likelyHomeID){
+    clusterCenters[likelyHomeID].properties.likelyHome = true
+  }
+
+  //var csvStr = "day,tweets\n"
+  //_.sortBy(Object.keys(gbDay)).forEach(function(k){
+  //  str += `${k},${gbDay[k].length}\n`
+  //})
+  //console.warn(str)
 
   fs.writeFileSync(fileToWrite+"/"+fileName, JSON.stringify({
       type:"FeatureCollection",

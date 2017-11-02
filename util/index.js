@@ -29,7 +29,7 @@ var q = async.queue(function (filePath, callback) {
   //Status Logging
   child.on('message', function(message) {
     if (message.success){
-      process.stderr.write("\rProcessed: "+ ++done + " user. Last fileName: "+message.finished);
+      process.stderr.write("\rProcessed: "+ ++done + " users. Last fileName: "+message.finished);
     }
     callback()
   });

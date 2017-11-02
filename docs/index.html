@@ -146,6 +146,21 @@ map.once('load',function(){
     }
   });
 
+  map.addLayer({
+    "id": "tweets-meta-home",
+    "type": "circle",
+    "source": "tweets-meta",
+    "paint": {
+      "circle-color": 'steelblue',
+      "circle-radius": 50,
+      "circle-opacity": 0.6
+    },
+    "filter":['has','likelyHome'],
+    "layout":{
+      "visibility":"visible"
+    }
+  });
+
   var parseDate = d3.timeParse("%Y-%m-%d");
   d3.json("../util/test/output/48hippo.geojson", function(error, data) {
     if (error) throw error;
