@@ -1,0 +1,21 @@
+{
+  "name": "twitter-clustering",
+  "version": "1.0.0",
+  "description": "Turfjs and Geo-Tagged tweets to learn about evacuation behavior",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@turf/centroid": "^4.7.3",
+    "@turf/clusters-dbscan": "^4.7.3",
+    "@turf/convex": "^4.7.3",
+    "@turf/distance": "^5.0.0",
+    "async": "^2.5.0",
+    "child_process": "^1.0.2",
+    "lodash": "^4.17.4",
+    "path": "^0.12.7"
+  }
+}
