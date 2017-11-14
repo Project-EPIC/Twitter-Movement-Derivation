@@ -12,21 +12,48 @@ var fileToWrite = process.argv[3];
 
 var parts       = fileToParse.split('/')
 var fileName    = parts[parts.length-1]
-var metaFileName = fileName.split('.')[0]+'-meta.geojson'
+var userName    = fileName.split(".")[0]
+var metaFileName = userName + '-meta.geojson'
 
-var geojson;
+var UTCOffset   = -5;
+
+function decimalDay(date, offset){
+  var hours = date.getUTCHours()
+  var day   = date.getUTCDay();
+
+  if (hours+offset < 0){
+    day = (((day-1)%6)+6)%6;
+    hours = (((hours+UTCOffset)%23)+23)%23;
+  }else{
+    hours+=offset
+  }
+
+  return day + Math.floor(hours/3)/10;
+}
+
 
 try{
-  geojson = JSON.parse(fs.readFileSync(fileToParse))
+  var geojson = JSON.parse(fs.readFileSync(fileToParse))
 
   /*
     Part I : Clustering
   */
 
   //Get only features with geometry and cluster them
-  var withGeometries = []
+  var withGeometries    = []
   var withoutGeometries = []
+  var otherTweets       = []
+
+  var otherUsers = 0;
+
   geojson.features.map(function(f){
+    //Don't count if the username doesn't match
+    if (f.properties.user != userName){
+      otherUsers++;
+      otherTweets.push(f)
+      return
+    }
+
     if(f.geometry){
       withGeometries.push({
         type      : 'Feature',
@@ -43,6 +70,10 @@ try{
      withoutGeometries.push(f)
    }
   })
+
+  //console.warn("Size of withoutGeometries: " + withoutGeometries.length )
+  //console.warn("Size of withGeometries: "    + withGeometries.length )
+  //console.warn("Number of other Users: "     + otherUsers )
 
   var distance  = 1; //kilometers
   var minPoints = 5;
@@ -81,9 +112,12 @@ try{
 
   //Now we merge all the properties back together, sorted by time
   var newFeatures = withoutGeometries.concat(clustered.features).map(function(f){
-    var d = new Date(f.properties.date)
+    //console.warn(f.properties.date)
+    var dateStr = f.properties.date;
+    f.properties.dateStr = dateStr;
+    var d = new Date(f.properties.date) //This is time aware, but only sort of.
     f.properties.date = d
-    f.properties.timestamp = Math.floor(d.getTime()/1000)
+    f.properties.timestamp = Math.floor(d.getTime()/1000) //UTC
     return f
   })
 
@@ -109,18 +143,24 @@ try{
 
   /*
     Part II: Temporal Clustering
+  */
 
-           Days
-  0 = Sunday    3 = Wednesday //6 = Saturday
-  1 = Monday    4 = Thursday
-  2 = Tuesday   5 = Friday
+  var gbDay = _.groupBy(sortedFeatures, function(f){
+    return decimalDay(f.properties.date, UTCOffset)
+  })
 
-           Hours
-  .0 = 0-3      .4 = 12-15 (noon - 3)
-  .1 = 3-6      .5 = 15-18 (3 - 6)
-  .2 = 6-9      .6 = 18-21 (6 - 9)
-  .3 = 9-12     .7 = 21-24 (9 - midnight)
-*/
+  /*
+             Days
+    0 = Sunday    3 = Wednesday     6 = Saturday
+    1 = Monday    4 = Thursday
+    2 = Tuesday   5 = Friday
+
+             Hours
+    .0 = 1am  - 4 am      .4 = 12-15 (1pm - 4pm)
+    .1 = 4am  - 7 am      .5 = 15-18 (4pm - 7pm)
+    .2 = 7am  - 10am      .6 = 18-21 (7pm - 10pm)
+    .3 = 10am - 1pm       .7 = 21-24 (10pm - 1am) (next day :/)
+  */
 
   var workHours = [
     1.2, 1.3, 1.4, 1.5,
@@ -138,9 +178,8 @@ try{
     5.0, 5.1, 5.6, 5.7,
   ]
 
-  var gbDay = _.groupBy(sortedFeatures, function(f){return f.properties.date.getDay() + Math.floor(f.properties.date.getHours()/3)/10})
-
   var homeClusters = []
+  var workClusters = []
   Object.keys(gbDay).forEach(function(key){
     if (homeHours.indexOf(Number(key))>-1){
       gbDay[key].map(function(f){
@@ -148,24 +187,44 @@ try{
           homeClusters.push(f.properties.cluster)
         }
       })
+    }else if (workHours.indexOf(Number(key))>-1){
+      gbDay[key].map(function(f){
+        if (f.properties.cluster){
+          workClusters.push(f.properties.cluster)
+        }
+      })
     }
   })
-  var counted = _.countBy(homeClusters)
-  var likelyHomeID = _.sortBy(Object.keys(counted), function(a){return -counted[a]})[0]
+  var countedHome = _.countBy(homeClusters)
+  var likelyHomeID = _.sortBy(Object.keys(countedHome), function(a){return -countedHome[a]})[0]
+
+  var countedWork = _.countBy(workClusters)
+  var likelyWorkID = _.sortBy(Object.keys(countedWork), function(a){return -countedWork[a]})[0]
 
   if (likelyHomeID){
     clusterCenters[likelyHomeID].properties.likelyHome = true
   }
 
-  //var csvStr = "day,tweets\n"
-  //_.sortBy(Object.keys(gbDay)).forEach(function(k){
-  //  str += `${k},${gbDay[k].length}\n`
-  //})
-  //console.warn(str)
+  if (likelyWorkID){
+    clusterCenters[likelyWorkID].properties.likelyWork = true
+  }
+
+  //console.warn("\n" + likelyHomeID + " " + likelyWorkID)
+
+  var rejoinedSortedFeatures = _.sortBy(otherTweets.map(function(f){
+    //Create proper objects from extra tweets
+    var dateStr = f.properties.date;
+    f.properties.dateStr = dateStr;
+    var d = new Date(f.properties.date) //This is time aware, but only sort of.
+    f.properties.date = d
+    f.properties.timestamp = Math.floor(d.getTime()/1000) //UTC
+    return f
+  }).concat(sortedFeatures), function(f){return f.properties.date})
+
 
   fs.writeFileSync(fileToWrite+"/"+fileName, JSON.stringify({
       type:"FeatureCollection",
-      features: sortedFeatures
+      features: rejoinedSortedFeatures
     }, null, 2)
   )
   fs.writeFileSync(fileToWrite+"/"+metaFileName, JSON.stringify({

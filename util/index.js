@@ -41,6 +41,7 @@ q.drain = function() {
 }
 
 //inputFiles = ["/Users/jenningsanderson/Documents/Twitter-Movement-Derivation/util/test/input/48hippo.geojson"]
+//inputFiles = ["/Users/jenningsanderson/Documents/Twitter-Movement-Derivation/util/test/input/noneck.geojson"]
 
 //Add all the files to be processed to the queue:
 q.push(inputFiles.slice(0,5),function(){
