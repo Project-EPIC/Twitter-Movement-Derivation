@@ -59,6 +59,7 @@ try{
         type      : 'Feature',
         geometry  : f.geometry,
         properties: {
+          tweetID: f.properties.tweetID || "",
           user: f.properties.user,
           text: f.properties.text,
           date: f.properties.date,
@@ -94,8 +95,8 @@ try{
         var ts = clusterGroups[cID].map(function(f){return new Date(f.properties.date)})
         clusterCenter.properties.cluster = Number(cID)
         clusterCenter.properties.clusterCenter = true;
-        clusterCenter.properties.firstTimestamp = Math.floor(_.min(ts).getTime() / 1000)
-        clusterCenter.properties.lastTimestamp  = Math.floor(_.max(ts).getTime() / 1000)
+        //clusterCenter.properties.firstTimestamp = Math.floor(_.min(ts).getTime() / 1000)
+        //clusterCenter.properties.lastTimestamp  = Math.floor(_.max(ts).getTime() / 1000)
         clusterCenter.properties.tweetCount = clusterGroups[cID].length
         metaGeoms.push(clusterCenter)
       }
