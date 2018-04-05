@@ -1,9 +1,13 @@
 *.geojsonl
-*.geojson
-*.json
+.geojson
+.json
 *.jsonl
 *data/*
 *.mbtiles
 *.txt
 *.hdfs/
 *.ipynb_checkpoints/
+Z_Archive
+
+0-DataSorting/Results/
+0-DataSorting/result_data/
