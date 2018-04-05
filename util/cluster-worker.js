@@ -6,6 +6,7 @@ var turfDistance = require('@turf/distance')
 var turfConvex   = require('@turf/convex')
 var fs     = require('fs')
 var _      = require('lodash')
+var path   = require('path')
 
 var fileToParse = process.argv[2];
 var fileToWrite = process.argv[3];
@@ -15,7 +16,13 @@ var fileName    = parts[parts.length-1]
 var userName    = fileName.split(".")[0]
 var metaFileName = userName + '-meta.geojson'
 
-var UTCOffset   = -5;
+const UTCOffset   = -5;
+
+const TWEET_LIMIT_FOR_CLUSTERING = 5000; 
+
+//DBScan 
+const DISTANCE  = 1; //kilometers
+// const MINPOINTS = 5; // 3 is default
 
 function decimalDay(date, offset){
   var hours = date.getUTCHours()
@@ -71,17 +78,20 @@ try{
      withoutGeometries.push(f)
    }
   })
+    
+  //If there are more than 5,000 points, break;
+  if (withGeometries.length>TWEET_LIMIT_FOR_CLUSTERING){    
+    throw 'too many' //custom error
+  }
 
   //console.warn("Size of withoutGeometries: " + withoutGeometries.length )
   //console.warn("Size of withGeometries: "    + withGeometries.length )
   //console.warn("Number of other Users: "     + otherUsers )
 
-  var distance  = 1; //kilometers
-  var minPoints = 5;
   var clustered = dbscan({
     type:'FeatureCollection',
     features: withGeometries
-  }, distance);//, {minPoints: minPoints});
+  }, DISTANCE);
 
   var clusterGroups = _.groupBy(clustered.features,function(f){return f.properties.cluster})
   var clusterCenters = {}
@@ -164,19 +174,20 @@ try{
   */
 
   var workHours = [
-    1.2, 1.3, 1.4, 1.5,
-    2.2, 2.3, 2.4, 2.5,
-    3.2, 3.3, 3.4, 3.5,
-    4.2, 4.3, 4.4, 4.5,
-    5.2, 5.3, 5.4, 5.5,
+    1.3, 1.4, 1.5,
+    2.3, 2.4, 2.5,
+    3.3, 3.4, 3.5,
+    4.3, 4.4, 4.5,
+    5.3, 5.4, 5.5,
   ]
   var homeHours = [
-    0.6, 0.7,
-    1.0, 1.1, 1.6, 1.7,
-    2.0, 2.1, 2.6, 2.7,
-    3.0, 3.1, 3.6, 3.7,
-    4.0, 4.1, 4.6, 4.7,
-    5.0, 5.1, 5.6, 5.7,
+    0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7,
+    1.0, 1.1, 1.2, 1.6, 1.7,
+    2.0, 2.1, 2.2, 2.6, 2.7,
+    3.0, 3.1, 3.2, 3.6, 3.7,
+    4.0, 4.1, 4.2, 4.6, 4.7,
+    5.0, 5.1, 5.2, 5.6, 5.7
+//     6.0, 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7
   ]
 
   var homeClusters = []
@@ -184,18 +195,28 @@ try{
   Object.keys(gbDay).forEach(function(key){
     if (homeHours.indexOf(Number(key))>-1){
       gbDay[key].map(function(f){
-        if (f.properties.cluster){
+        if (f.properties.hasOwnProperty('cluster')){
           homeClusters.push(f.properties.cluster)
         }
       })
     }else if (workHours.indexOf(Number(key))>-1){
       gbDay[key].map(function(f){
-        if (f.properties.cluster){
+        if (f.properties.hasOwnProperty('cluster')){
           workClusters.push(f.properties.cluster)
         }
       })
     }
   })
+    
+      
+//   if (userName=="AndyDeJesus305"){
+//       console.log("\n--DEBUG--")
+//       console.log(JSON.stringify(gbDay,null,4))
+//       console.log(homeClusters)
+//       console.log(workClusters)
+//       console.log("--DEBUG--\n")
+//   }
+    
   var countedHome = _.countBy(homeClusters)
   var likelyHomeID = _.sortBy(Object.keys(countedHome), function(a){return -countedHome[a]})[0]
 
@@ -223,12 +244,12 @@ try{
   }).concat(sortedFeatures), function(f){return f.properties.date})
 
 
-  fs.writeFileSync(fileToWrite+"/"+fileName, JSON.stringify({
+  fs.writeFileSync(path.join(fileToWrite,fileName), JSON.stringify({
       type:"FeatureCollection",
       features: rejoinedSortedFeatures
     }, null, 2)
   )
-  fs.writeFileSync(fileToWrite+"/"+metaFileName, JSON.stringify({
+  fs.writeFileSync(path.join(fileToWrite,metaFileName), JSON.stringify({
       type:"FeatureCollection",
       features: metaGeoms
     }, null, 2)
@@ -236,12 +257,23 @@ try{
 
   process.send({
     success: true,
-    finished: fileName
+    fileName: fileName
   })
 
 }catch(err){
-  console.warn("Error on file: ", fileToParse)
-  throw err
+    
+  if (err==='too many'){
+    process.send({
+      success: false,
+      status: 'skipped',
+      fileName: fileName,
+      geometries: withGeometries.length
+    })
+
+  }else{
+    console.warn("Error on file: ", fileToParse)
+    throw err
+  }
 }
 
 //Is this required at the end?

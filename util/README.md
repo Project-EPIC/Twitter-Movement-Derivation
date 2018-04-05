@@ -13,3 +13,7 @@ The minimum requirements for the geojson files are to include the following `pro
     }
 
 The worker function will handle the rest.
+
+This utility can also handle contextual plus streams, based on the username.
+
+The input **MUST** be a geojson feature collection, not line delimited geojson.
