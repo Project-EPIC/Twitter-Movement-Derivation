@@ -13,7 +13,7 @@
     "@turf/clusters-dbscan": "^4.7.3",
     "@turf/convex": "^4.7.3",
     "@turf/distance": "^5.0.0",
-    "async": "^2.5.0",
+    "async": "^2.6.4",
     "child_process": "^1.0.2",
     "commander": "^2.14.1",
     "lodash": "^4.17.19",
